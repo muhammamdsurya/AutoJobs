@@ -2,7 +2,7 @@
 # One image for web, admin and worker (monorepo: npm workspaces). Stage 1 builds; the final image keeps only what runs
 # (production dependencies, the builds, the source the worker and migrations run from) and runs as the unprivileged
 # "node" user (uid 1000).
-FROM node:24-slim AS build
+FROM node:26-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/
@@ -12,7 +12,7 @@ RUN npm ci
 COPY . .
 RUN npm run build && npm prune --omit=dev && rm -rf apps/*/.next/cache
 
-FROM node:24-slim
+FROM node:26-slim
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build --chown=node:node /app /app
