@@ -15,7 +15,6 @@ export default function LegalPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-10 text-sm leading-relaxed sm:py-14">
       <BackLink href="/">AutoJobs</BackLink>
-      <Notice>Draf: wajib ditinjau tim legal sebelum peluncuran publik.</Notice>
       <article className="panel space-y-10 [&_li]:pl-1 [&_li::marker]:text-accent [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:text-muted [&_b]:text-ink">
         <section className="space-y-3">
           <h1 className="text-3xl">Ketentuan Layanan</h1>
