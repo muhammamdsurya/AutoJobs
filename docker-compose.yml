@@ -1,0 +1,67 @@
+# PostgreSQL + web (Next.js production build + extension API) + admin (console) + worker (searches, token payments,
+# recovery, retention), restarted automatically. Applying runs in users' browsers (AutoJobs extension). All share ./data
+# (encrypted CVs, proofs and the QRIS, the same folder `npm run dev` uses).
+#   This computer:  docker compose up -d --build web admin worker   → http://localhost:3000 and http://localhost:3001
+#   A server:       DOMAIN=your-domain ADMIN_DOMAIN=admin.your-domain docker compose --profile https up -d --build
+#                   (adds Caddy for HTTPS, see Caddyfile)
+x-app: &app
+  build: .
+  image: autojobs-app # web and worker run the same image (the second build comes from cache)
+  env_file: .env
+  environment:
+    DATABASE_URL: postgres://autojobs:${POSTGRES_PASSWORD:-autojobs}@postgres:5432/autojobs
+    DATA_DIR: /data
+  volumes: ["./data:/data"]
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: autojobs
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-autojobs}
+      POSTGRES_DB: autojobs
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["127.0.0.1:${PG_PORT:-5432}:5432"] # for local development only
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "autojobs"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  web:
+    <<: *app
+    command: sh -c "npm run migrate && npm start"
+    ports: ["127.0.0.1:${WEB_PORT:-3000}:3000"] # stop `npm run dev` first, or set WEB_PORT
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  admin:
+    <<: *app
+    command: npm run start:admin
+    ports: ["127.0.0.1:${ADMIN_PORT:-3001}:3001"] # stop `npm run dev:admin` first, or set ADMIN_PORT
+    depends_on:
+      web: { condition: service_started } # web runs the migrations
+
+  worker:
+    <<: *app
+    command: npm run worker
+    stop_grace_period: 1m # let a running search finish
+    depends_on:
+      postgres: { condition: service_healthy }
+      web: { condition: service_started }
+
+  caddy:
+    profiles: [https]
+    image: caddy:2-alpine
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:-admin.localhost}
+    ports: ["80:80", "443:443"]
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddydata:/data"]
+    depends_on: [web, admin]
+    restart: unless-stopped
+
+volumes:
+  pgdata: {}
+  caddydata: {}

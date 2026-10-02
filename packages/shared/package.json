@@ -1,0 +1,11 @@
+{
+  "name": "@autojobs/shared",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./ui": "./src/ui.tsx",
+    "./forms": "./src/forms.tsx",
+    "./globals.css": "./src/globals.css",
+    "./*": "./src/*.ts"
+  }
+}

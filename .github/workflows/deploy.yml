@@ -1,0 +1,71 @@
+# Every push to main: build + tests against a throwaway PostgreSQL, then (only if they pass) deploy to the VPS over SSH.
+# Pull requests only run the checks. Setup (secrets, deploy key, forced command): docs/DEPLOY.md, part G.
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # never stop a deploy halfway
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: autojobs
+          POSTGRES_PASSWORD: autojobs
+          POSTGRES_DB: autojobs
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U autojobs"
+          --health-interval 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://autojobs:autojobs@localhost:5432/autojobs
+      DATA_DIR: ./data
+      APP_URL: http://localhost:3000
+      ADMIN_URL: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Throwaway encryption key for the tests
+        run: echo "ENCRYPTION_KEY=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - name: Build both apps (also type-checks)
+        run: npm run build
+      - run: npm run migrate
+      - run: npm test
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Deploy to the VPS
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The key may only run scripts/deploy.sh on the server (forced command in authorized_keys).
+          ssh -T -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$TARGET"

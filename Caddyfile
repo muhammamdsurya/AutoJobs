@@ -1,0 +1,21 @@
+# HTTPS for both apps (docker compose --profile https). Certificates are automatic for real domains.
+# HSTS: browsers only ever use HTTPS for these hosts (no downgrade on a first plain-http visit). request_body: the most
+# a request may carry (CV uploads and extension evidence on the app, QRIS/proof images on the console).
+{$DOMAIN:localhost} {
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	request_body {
+		max_size 16MB
+	}
+	reverse_proxy web:3000
+}
+
+{$ADMIN_DOMAIN:admin.localhost} {
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	request_body {
+		max_size 8MB
+	}
+	# Optional, recommended: only your own IP addresses may open the console (see docs/DEPLOY.md, part M).
+	# @outside not remote_ip 203.0.113.10
+	# respond @outside 403
+	reverse_proxy admin:3001
+}

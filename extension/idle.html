@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>AutoJobs: jendela kerja</title>
+  <link rel="stylesheet" href="ui.css" />
+  <style>
+    body { min-height: 100vh; display: grid; place-items: center; padding: 24px; font-size: 15px; }
+    main { max-width: 34rem; padding: 32px; text-align: center; border-radius: var(--radius-panel); }
+    h1 { margin-top: 20px; font-size: 26px; }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 6px 12px; border-radius: var(--radius-chip);
+      background: var(--tint); color: var(--tone); box-shadow: inset 0 0 0 1px var(--ring); font-weight: 500;
+    }
+    main > p { margin-top: 16px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <span class="logo">
+      <span class="logo-mark"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg></span>
+      <span>Auto<em>Jobs</em></span>
+    </span>
+    <h1>Jendela kerja AutoJobs</h1>
+    <div class="status tone-info">
+      <svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
+      <span id="status" role="status">Menunggu lamaran berikutnya…</span>
+    </div>
+    <p class="muted">
+      Lamaran diproses di jendela ini. Biarkan jendela ini tetap terbuka dan <b style="color:var(--ink)">sebagian tetap terlihat</b> (boleh kecil
+      di pojok layar). Jika tertutup aplikasi lain atau diperkecil, antrean menunggu dan lanjut sendiri saat jendela terlihat lagi.
+    </p>
+  </main>
+  <script src="idle.js"></script>
+</body>
+</html>

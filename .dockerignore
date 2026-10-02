@@ -1,0 +1,21 @@
+# Not needed to build or run the image (and never secrets or local data).
+**/node_modules
+**/.next
+data
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.git
+.github
+.claude
+.agents
+graphify-out
+docs
+apps/web/tests
+scripts/demo.ts
+*.md
+skills-lock.json
+Caddyfile
+Dockerfile
+docker-compose.yml

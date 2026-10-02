@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "AutoJobs",
+  "version": "0.2.2",
+  "description": "Melamar lowongan dari pencarian AutoJobs di Chrome Anda sendiri, bergantian antar-portal dengan jeda aman.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AutoJobs",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://*.jobstreet.com/*",
+    "https://*.seek.com/*",
+    "https://glints.com/*",
+    "https://*.glints.com/*",
+    "https://*.linkedin.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ]
+}
